@@ -43,9 +43,9 @@ namespace {
     // Stores the GL data relative to a given mesh layer. This program only uses one mesh layer with multiple VAOs and VBOs
     struct GLMesh {
         // Variables for rectangular objects - each pbject needs a Vertex Array Object (VAO) and Vertex Buffer Object (VBO)
-        GLuint planeVAO, centerpieceVAO, hedgeVAO, roadVAO, hedgeInnerVAO, centerRoadVAO, skyboxVAO;         // Handle for the vertex array object
-        GLuint planeVBO, centerpieceVBO, hedgeVBO, roadVBO, hedgeInnerVBO, centerRoadVBO, skyboxVBO;         // Handle for the vertex buffer object
-        GLuint nVerticesPlane, nVerticesCenterpiece, nVerticesHedge, nVerticesRoad, nVerticesHedgeInner, nVerticesCenterRoad, nVerticesSkybox;    // Number of indices of the objects this mesh
+        GLuint planeVAO, centerpieceVAO, hedgeVAO, roadVAO, hedgeInnerVAO;         // Handle for the vertex array object
+        GLuint planeVBO, centerpieceVBO, hedgeVBO, roadVBO, hedgeInnerVBO;         // Handle for the vertex buffer object
+        GLuint nVerticesPlane, nVerticesCenterpiece, nVerticesHedge, nVerticesRoad, nVerticesHedgeInner;    // Number of indices of the objects this mesh
 
         // Variables for sphere objects - each pbject needs a Vertex Array Object (VAO) and Vertex Buffer Object (VBO)
         GLuint sphereNumIndices;
@@ -101,9 +101,6 @@ namespace {
     glm::vec3 gLightPosition(0.0f, 50.0f, 0.0f);
     glm::vec3 gLightPosition2(0.0f, 1.0f, 1.0f);
     glm::vec3 gLightScale(2.0f);
-
-    // Lamp animation boolean
-    bool gIsLampOrbiting = true;
 }
 
 /* User-defined Function prototypes to:
@@ -481,16 +478,6 @@ void UProcessInput(GLFWwindow* window) {
     }
     else {
     }
-
-    // Pause and unpause lamp orbit
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !gIsLampOrbiting) {
-        gIsLampOrbiting = true;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && gIsLampOrbiting) {
-        gIsLampOrbiting = false;
-    }
-    else {
-    }
 }
 
 
@@ -569,14 +556,6 @@ void UMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) 
 
 // Functioned called to render a frame
 void URender() {
-    // Lamp orbits aroung the origin
-    const float angularVelocity = glm::radians(45.0f);
-    if (gIsLampOrbiting) {
-        glm::vec4 newPosition = glm::rotate(angularVelocity * gDeltaTime, glm::vec3(0.0f, 0.0f, 5.0f)) * glm::vec4(gLightPosition, 1.0);
-        gLightPosition.x = newPosition.x;
-        gLightPosition.y = newPosition.y;
-        gLightPosition.z = newPosition.z;
-    }
     // Enable z-depth
     glEnable(GL_DEPTH_TEST);
 
@@ -661,31 +640,6 @@ void URender() {
     // Draws the triangles
     glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesCenterpiece);
 
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-    
-    //DRAW skybox
-    // 
-    // Activate skybox VAO
-    glBindVertexArray(gMesh.skyboxVAO);
-
-    // Set the shader to be used
-    glUseProgram(gShaderProgramId);
-
-    // Model matrix: transformations are applied right-to-left order
-    model = glm::translate(gCubePosition) * glm::scale(gCubeScale2);
-
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    // Pass color, light, and camera data to the Cube Shader program's corresponding uniforms
-    glUniform2fv(UVScaleLoc, 1, glm::value_ptr(gUVScale));
-
-    // bind textures on corresponding texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gTextureIdSky);
-
-    // Draws the triangles
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesSkybox);
 
     //-------------------------------------------------------------------------------------------------------------------------------
 
@@ -774,40 +728,6 @@ void URender() {
 
     // DRAW Hedge #8
     translation = glm::translate(glm::vec3(-14.0f, 0.0f, 3.0f));
-    model = translation * rotation * scale;
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesHedge);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
-    // DRAW Background Hedge #1
-    translation = glm::translate(glm::vec3(-11.5f, 0.0f, -19.5f));
-    scale = glm::scale(glm::vec3(1.0f, 6.0f, 2.5f));
-    model = translation * rotation * scale;
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesHedge);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
-    // DRAW Background Hedge #2
-    translation = glm::translate(glm::vec3(11.5f, 0.0f, -19.5f));
-    model = translation * rotation * scale;
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesHedge);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
-    // DRAW Background Hedge #3
-    rotation = glm::rotate(0.0f, glm::vec3(1.0, 1.0f, 1.0f));
-    translation = glm::translate(glm::vec3(-19.5f, 0.0f, -11.5f));
-    model = translation * rotation * scale;
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesHedge);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
-    // DRAW Background Hedge #4
-    translation = glm::translate(glm::vec3(19.5f, 0.0f, -11.5f));
     model = translation * rotation * scale;
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesHedge);
@@ -923,27 +843,6 @@ void URender() {
 
     // Draws the triangles
     glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesPlane);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
-    // DRAW Road Center
-    // 
-    // Activate plane VAO - same vao as the plane, but with a new texture and transform.
-    glBindVertexArray(gMesh.centerRoadVAO);
-
-    // Set initial model settings - (redundant variables may be left for ease of adding future objects)
-    scale = glm::scale(glm::vec3(3.5f, 3.5f, 3.5f));
-    rotation = glm::rotate(0.0f, glm::vec3(1.0, 1.0f, 1.0f));
-    translation = glm::translate(glm::vec3(0.0f, 0.0f, 0.0f));
-    model = translation * rotation * scale;
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    // bind textures on corresponding texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gTextureIdBrick);
-
-    // Draws the triangles
-    glDrawArrays(GL_TRIANGLES, 0, gMesh.nVerticesCenterRoad);
 
     //-------------------------------------------------------------------------------------------------------------------------------
     
@@ -1329,74 +1228,6 @@ void UCreateMesh(GLMesh& mesh) {
        -1.0f, 0.01f, -3.0f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f    //Top Left Corner
     };
 
-    GLfloat centerRoadVerts[] = {
-
-        //Positions         //Normals              //Texture Coordinates
-        //Top Triangle 1
-        0.0f, 0.001f,  3.0f,  0.0f, 1.0f,  0.0f,  0.0f, 1.0f,    //Top Corner
-        3.0f, 0.001f,  0.0f,  0.0f, 1.0f,  0.0f,  1.0f, 0.0f,    //Right Corner
-       -3.0f, 0.001f,  0.0f,  0.0f, 1.0f,  0.0f, -1.0f, 0.0f,    //Left Corner
-        //Top Triangle 2
-        0.0f, 0.001f, -3.0f,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,   //Bottom Corner
-        3.0f, 0.001f,  0.0f,  0.0f, 1.0f,  0.0f,  1.0f, 0.0f,    //Right Corner
-       -3.0f, 0.001f,  0.0f,  0.0f, 1.0f,  0.0f, -1.0f, 0.0f,    //Left Corner
-        
-    };
-
-    float skyScale = 50.0f;
-    GLfloat skyboxVerts[] = {
-
-      //Positions         //Normals              //Texture Coordinates
-      //Top Triangle 1
-     -skyScale, skyScale,  skyScale,  0.0f, 1.0f,  0.0f,  -1.0f, 1.0f,    //Top Left Corner
-      skyScale, skyScale,  skyScale,  0.0f, 1.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale, skyScale, -skyScale,  0.0f, 1.0f,  0.0f,  -1.0f, -1.0f,    //Bottom Left Corner
-      //Top Triangle 2
-      skyScale, skyScale, -skyScale,  0.0f, 1.0f,  0.0f,  1.0f, -1.0f,   //Bottom Right Corner
-      skyScale, skyScale,  skyScale,  0.0f, 1.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale, skyScale, -skyScale,  0.0f, 1.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Bottom Triangle 1
-     -skyScale, -skyScale,  skyScale,  0.0f, -1.0f,  0.0f,  -1.0f, 1.0f,    //Top Left Corner
-      skyScale, -skyScale,  skyScale,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale, -skyScale, -skyScale,  0.0f, -1.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Bottom Triangle 2
-      skyScale, -skyScale, -skyScale,  0.0f, -1.0f,  0.0f,  1.0f, -1.0f,   //Bottom Right Corner
-      skyScale, -skyScale,  skyScale,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale, -skyScale, -skyScale,  0.0f, -1.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Right Triangle 1
-     skyScale, skyScale, -skyScale,  1.0f, 0.0f,  0.0f,  0.0f, 1.0f,    //Top Left Corner
-     skyScale, skyScale,  skyScale,  1.0f, 0.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     skyScale,-skyScale, -skyScale,  1.0f, 0.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Right Triangle 2
-     skyScale,-skyScale,  skyScale,  1.0f, 0.0f,  0.0f,  1.0f, -1.0f,   //Bottom Right Corner
-     skyScale, skyScale,  skyScale,  1.0f, 0.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     skyScale,-skyScale, -skyScale,  1.0f, 0.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Left Triangle 1
-     -skyScale, skyScale,  skyScale,  -1.0f, 0.0f,  0.0f,  0.0f, 1.0f,    //Top Left Corner
-     -skyScale, skyScale,  -skyScale, -1.0f, 0.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale,-skyScale,  skyScale,  -1.0f, 0.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Left Triangle 2
-     -skyScale,-skyScale, -skyScale,  -1.0f, 0.0f,  0.0f,  1.0f, -1.0f,   //Bottom Right Corner
-     -skyScale, skyScale, -skyScale,  -1.0f, 0.0f,  0.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale,-skyScale,  skyScale,  -1.0f, 0.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Front Triangle 1
-     -skyScale, skyScale,  skyScale,  0.0f, 0.0f,  1.0f,  0.0f, 1.0f,    //Top Left Corner
-     skyScale,  skyScale,  skyScale,  0.0f, 0.0f,  1.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale,-skyScale,  skyScale,  0.0f, 0.0f,  0.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Front Triangle 2
-      skyScale,-skyScale,  skyScale,  0.0f, 0.0f,  1.0f,  1.0f, -1.0f,   //Bottom Right Corner
-      skyScale, skyScale,  skyScale,  0.0f, 0.0f,  1.0f,  1.0f, 1.0f,    //Top Right Corner
-     -skyScale, -skyScale,  skyScale,  0.0f, 0.0f,  1.0f, -1.0f, 1.0f,    //Bottom Left Corner
-     //Back Triangle 1
-     skyScale, skyScale, -skyScale,  0.0f, 0.0f,  -1.0f,  0.0f, 1.0f,    //Top Left Corner
-     -skyScale,skyScale, -skyScale,  0.0f, 0.0f,  -1.0f,  1.0f, 1.0f,    //Top Right Corner
-     skyScale,-skyScale, -skyScale,  0.0f, 0.0f,  -1.0f, -1.0f, -1.0f,    //Bottom Left Corner
-     //Back Triangle 2
-     -skyScale,-skyScale, -skyScale,  0.0f, 0.0f,  -1.0f,  1.0f, -1.0f,   //Bottom Right Corner
-     -skyScale, skyScale, -skyScale,  0.0f, 0.0f,  -1.0f,  1.0f, 1.0f,    //Top Right Corner
-     skyScale, -skyScale, -skyScale,  0.0f, 0.0f,  -1.0f, -1.0f, -1.0f,    //Bottom Left Corner
-    };
-
     // set variables for stride to parse vertice data and send to mesh
     const GLuint floatsPerVertex = 3;
     const GLuint floatsPerNormal = 3;
@@ -1504,30 +1335,6 @@ void UCreateMesh(GLMesh& mesh) {
 
     //-------------------------------------------------------------------------------------------------------------------------------
 
-    // CenterRoadVAO and CenterRoadVBO bindings
-    //
-    // set the vertice data in mesh layer
-    mesh.nVerticesCenterRoad = sizeof(centerRoadVerts) / (sizeof(centerRoadVerts[0]) * (floatsPerVertex + floatsPerNormal + floatsPerUV));
-
-    // set data to corresponding VAO
-    glGenVertexArrays(1, &mesh.centerRoadVAO); // we can also generate multiple VAOs or buffers at the same time
-    glBindVertexArray(mesh.centerRoadVAO);
-
-    // Create buffer
-    glGenBuffers(1, &mesh.centerRoadVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.centerRoadVBO); // Activates the buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(centerRoadVerts), centerRoadVerts, GL_STATIC_DRAW); // Sends vertex or coordinate data to the GPU
-
-    // Create Vertex Attribute Pointers
-    glVertexAttribPointer(0, floatsPerVertex, GL_FLOAT, GL_FALSE, stride, 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, floatsPerNormal, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float)* floatsPerVertex));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, floatsPerUV, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float)* (floatsPerVertex + floatsPerNormal)));
-    glEnableVertexAttribArray(2);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
-
     // hedgeInnerVAO and hedgeInnerVBO bindings
     //
     // set the vertice data in mesh layer
@@ -1583,30 +1390,6 @@ void UCreateMesh(GLMesh& mesh) {
     glEnableVertexAttribArray(2);
 
     //-------------------------------------------------------------------------------------------------------------------------------
-
-    // skyboxVAO and skyboxVAO bindings
-    //
-    // set the vertice data in mesh layer
-    mesh.nVerticesSkybox = sizeof(skyboxVerts) / (sizeof(skyboxVerts[0]) * (floatsPerVertex + floatsPerNormal + floatsPerUV));
-
-    // set data to corresponding VAO
-    glGenVertexArrays(1, &mesh.skyboxVAO); // we can also generate multiple VAOs or buffers at the same time
-    glBindVertexArray(mesh.skyboxVAO);
-
-    // Create buffer
-    glGenBuffers(1, &mesh.skyboxVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.skyboxVBO); // Activates the buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVerts), skyboxVerts, GL_STATIC_DRAW); // Sends vertex or coordinate data to the GPU
-
-    // Create Vertex Attribute Pointers
-    glVertexAttribPointer(0, floatsPerVertex, GL_FLOAT, GL_FALSE, stride, 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, floatsPerNormal, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float)* floatsPerVertex));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, floatsPerUV, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float)* (floatsPerVertex + floatsPerNormal)));
-    glEnableVertexAttribArray(2);
-
-    //-------------------------------------------------------------------------------------------------------------------------------
 }
 
 // Teardown mesh layer
@@ -1623,10 +1406,6 @@ void UDestroyMesh(GLMesh& mesh) {
     glDeleteBuffers(1, &mesh.hedgeInnerVBO);
     glDeleteVertexArrays(1, &mesh.sphereVAO);
     glDeleteBuffers(1, &mesh.sphereVBO);
-    glDeleteVertexArrays(1, &mesh.centerRoadVAO);
-    glDeleteBuffers(1, &mesh.centerRoadVBO);
-    glDeleteVertexArrays(1, &mesh.skyboxVAO);
-    glDeleteBuffers(1, &mesh.skyboxVBO);
 }
 
 
